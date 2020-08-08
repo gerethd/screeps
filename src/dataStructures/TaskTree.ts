@@ -1,4 +1,3 @@
-import {WorkerTask} from "../@types/workerTask";
 
 export class TaskTree {
 

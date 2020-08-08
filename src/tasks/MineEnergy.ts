@@ -1,10 +1,10 @@
-import {WorkerTask} from "../@types/workerTask";
+import {CreepConstants} from "../constants/CreepConstants";
 
 export class MineEnergy implements WorkerTask {
 
   class: string;
   outputs: Map<string, number>;
-  requirements: Map<string, Array<WorkerTask>>;
+  requirements: Map<string, number>;
   // @ts-ignore
   creep: Creep;
   // @ts-ignore
@@ -12,7 +12,7 @@ export class MineEnergy implements WorkerTask {
   // @ts-ignore
   private _storageLocation: Structure;
   private resourcesGathered = false;
-  priority: CreepConstants = CreepConstants.PRIORITY_HIGH;
+  priority: number = CreepConstants.PRIORITY_HIGH;
 
 
   constructor() {

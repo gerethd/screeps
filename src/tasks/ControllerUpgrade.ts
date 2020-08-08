@@ -1,17 +1,17 @@
-import {WorkerTask} from "../@types/workerTask";
 import {MineEnergy} from "./MineEnergy";
+import {CreepConstants} from "../constants/CreepConstants";
 
 export class ControllerUpgrade implements WorkerTask {
   class: string;
   // @ts-ignore
   creep: RoomObject;
   outputs: Map<string, number>;
-  requirements: Map<string, Array<WorkerTask>>;
+  requirements: Map<string, number>;
   // @ts-ignore
   sourceLocation: RoomObject;
   // @ts-ignore
   storageLocation: Structure;
-  priority: CreepConstants = CreepConstants.PRIORITY_MEDIUM;
+  priority: number = CreepConstants.PRIORITY_MEDIUM;
 
   constructor() {
     this.class = "UpgradeController"

@@ -8,6 +8,10 @@ interface Memory
   spawns: { [index: string]: SpawnMemory },
 }
 
+interface SpawnMemory {
+  tasks: Array<WorkerTask>
+}
+
 interface GlobalAutomationMemory
 {
   handleOldOrders?: { orderId: string, lastAdjustedTime: number }[]

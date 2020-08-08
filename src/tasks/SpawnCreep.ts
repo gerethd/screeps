@@ -1,14 +1,14 @@
-import {WorkerTask} from "../@types/workerTask";
 import {RandomNameGenerator} from "../utils/RandomNameGenerator";
 import {ZevrantCreepMemory} from "../pojo/ZevrantCreepMemory";
+import {CreepConstants} from "../constants/CreepConstants";
 
 export class SpawnCreep implements WorkerTask {
   class: string;
   // @ts-ignore
   creep: StructureSpawn;
   outputs: Map<string, number>;
-  requirements: Map<string, Array<WorkerTask>>;
-  priority: CreepConstants = CreepConstants.PRIORITY_HIGHEST;
+  requirements: Map<string, number>;
+  priority: number = CreepConstants.PRIORITY_HIGHEST;
   // @ts-ignore
   private _sourceLocation: RoomObject;
   // @ts-ignore
@@ -34,6 +34,7 @@ export class SpawnCreep implements WorkerTask {
       return false;
     }
     let memory: ZevrantCreepMemory = new ZevrantCreepMemory();
+    console.log(this.creep.id + " " + this.creep.name)
     return this.creep.spawnCreep([MOVE, MOVE, MOVE, CARRY, WORK], RandomNameGenerator.generate(), {memory: memory}) == 0;
   }
 

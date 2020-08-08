@@ -7,7 +7,7 @@
   "scripts": {
     "lint": "eslint \"src/**/*.ts\"",
     "build": "rollup -c",
-    "push-main": "rollup -c && cp -r dist/* C:\\Users\\zevrant\\AppData\\Local\\Screeps\\scripts\\192_168_0_176___21025\\default\\",
+    "push-main": "rollup -c && cp -r dist/* /home/zevrant/.config/Screeps/scripts/192_168_0_176___21025/default",
     "push-pserver": "rollup -c --environment DEST:pserver",
     "push-sim": "rollup -c --environment DEST:sim",
     "test": "npm run test-unit",

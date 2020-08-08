@@ -1,9 +1,9 @@
 import {ErrorMapper} from "utils/ErrorMapper";
 import {TaskTree} from "./dataStructures/TaskTree";
 import {SpawnCreep} from "./tasks/SpawnCreep";
-import {WorkerTask} from "./@types/workerTask";
 import {MineEnergy} from "./tasks/MineEnergy";
 import {ControllerUpgrade} from "./tasks/ControllerUpgrade";
+import {ZevrantCreepMemory} from "./pojo/ZevrantCreepMemory";
 
 
 // When compiling TS to JS and bundling with rollup, the line numbers and file names in error messages change
@@ -20,7 +20,6 @@ let roomCreepStorage: Map<string, Map<string, Creep>> = new Map<string, Map<stri
 
 export const loop = ErrorMapper.wrapLoop(() => {
 
-  console.log("here")
   _.forEach(Game.rooms, room => {
     if(roomTasksMap.get(room.name) == undefined) {
       roomTasksMap.set(room.name, []);
@@ -36,12 +35,13 @@ export const loop = ErrorMapper.wrapLoop(() => {
       creepStorage = roomCreepStorage.get(room.name);
     }
 
-    console.log(getSpawnRequests() <= room.find(FIND_MY_SPAWNS).length)
-    if(room.find(FIND_MY_CREEPS).length < maxRoomCreeps && getSpawnRequests() <= room.find(FIND_MY_SPAWNS).length) {
-      console.log("here")
+    if(room.find(FIND_MY_CREEPS).length < maxRoomCreeps && getSpawnRequests(room) <= room.find(FIND_MY_SPAWNS).length) {
       let spawnTask = new SpawnCreep();
       let spawners = room.find(FIND_MY_SPAWNS);
       let spawner = spawners[Math.floor(Math.random() * spawners.length)];
+      _.forEach(spawner, spawner => {
+        creepStorage.set(spawner.id, spawner);
+      })
       spawnTask.sourceLocation = spawner;
       spawnTask.storageLocation = spawner;
       spawnTask.assign(spawner);
@@ -49,10 +49,10 @@ export const loop = ErrorMapper.wrapLoop(() => {
       // @ts-ignore
       roomTasksMap.get(room.name).push(task);
       buildDependents(spawnTask, task, room);
-      spawnTask.execute();
     }
 
     let ids = verifyCreeps(room, creepStorage);
+    console.log(ids)
     let unassignedTasks: Array<WorkerTask> = getUnassignedTasks(roomTasksMap.get(room.name));
     _.forEach(unassignedTasks, task => {
       assignCreep(ids, task, creepStorage)
@@ -60,19 +60,28 @@ export const loop = ErrorMapper.wrapLoop(() => {
     let creeps = creepStorage.keys();
     let creep = creeps.next();
     while(!creep.done) {
+      console.log("here")
       executeHighestPriority(creepStorage.get(creep.value));
+      creep = creeps.next();
     }
-
+    let spawners = room.find(FIND_MY_SPAWNS)
+    _.forEach(spawners, spawn => {
+      if(spawn.memory !== undefined && spawn.memory.tasks !== undefined && spawn.memory.tasks.length > 0) {
+        spawn.memory.tasks[0].execute();
+      }
+    })
   });
 
 });
 
-function getSpawnRequests(): number {
+function getSpawnRequests(room: Room): number {
   let count = 0;
 
-  _.forEach(taskTrees, task => {
-    if(task.value.class == new SpawnCreep().class) {
-      count++;
+  _.forEach(room.find(FIND_MY_SPAWNS), spawn => {
+    if(spawn.memory.tasks !== undefined) {
+      count += spawn.memory.tasks.length;
+    } else {
+      spawn.memory.tasks = [];
     }
   })
   return count;
@@ -87,6 +96,7 @@ function buildDependents(task: WorkerTask, parentTask: TaskTree, room: Room) {
     let newTask;
     _.forEach(taskTemplates, taskTemplate => {
       let outputs = taskTemplate.outputs.keys();
+      console.log(taskTemplate.class)
       let output = outputs.next()
       while(!output.done) {
         if (output.value == key.value) {
@@ -108,6 +118,7 @@ function buildDependents(task: WorkerTask, parentTask: TaskTree, room: Room) {
               break;
             }
             case "SpawnCreep": {
+              console.log("here")
               newTask = new SpawnCreep();
               let spawnerSources = room.find(FIND_MY_SPAWNS);
               newTask.sourceLocation = spawnerSources[Math.floor(Math.random() * spawnerSources.length)];
@@ -129,8 +140,8 @@ function verifyCreeps(room: Room, creepStorage: Map<string, Creep>): Array<strin
   let ids: string[] = [];
   let tempIds: string[] = [];
   if(creepStorage === undefined) {
+    creepStorage = new Map<string, Creep>();
     _.forEach(creeps, creep => {
-      // @ts-ignore
       creepStorage.set(creep.id, creep);
     });
   }
@@ -165,7 +176,10 @@ function reassignTasks(ids: string[], id: string, creepStorage: Map<string, Cree
     return;
   }
   ids.splice(ids.indexOf(id), 1);
-  // @ts-ignore
+  if(creep.memory === undefined) {
+    return;
+  }
+
   let tasks: Array<WorkerTask> = creep.memory.tasks;
   let index = 0;
   while (tasks.length > 0){
@@ -184,25 +198,40 @@ function assignCreep(ids: string[], workerTask: WorkerTask | undefined, creepSto
     if(taskCount == undefined) {
       let creep = creepStorage.get(id);
       if(creep !== undefined) {
+        if(creep.memory.tasks === undefined) {
+          creep.memory.tasks = [];
+        }
         minId = creep.id;
         // @ts-ignore
         taskCount = creep.memory.tasks.length
       }
     } else {
       let creep = creepStorage.get(id);
-      // @ts-ignore
-      if( creep !== undefined && creep.memory.tasks.length < taskCount) {
-        // @ts-ignore
-        taskCount = creep.memory.tasks.length;
-        minId = creep.id;
+      if(creep !== undefined) {
+        if(creep.memory.tasks === undefined) {
+          creep.memory.tasks = [];
+        }
+        if (creep.memory.tasks.length < taskCount) {
+          // @ts-ignore
+          taskCount = creep.memory.tasks.length;
+          minId = creep.id;
+        }
       }
     }
   });
   let creep = creepStorage.get(minId);
-  if(creep !== undefined) {
-    // @ts-ignore
+  if(creep !== undefined && workerTask.class != new SpawnCreep().class) {
     creep.memory.tasks.push(workerTask);
     workerTask.assign(creep);
+  } else if(creep !== undefined){
+    let spawners = creep.room.find(FIND_MY_SPAWNS);
+    let spawner = spawners[Math.floor(Math.random() * spawners.length)]
+    if(spawner !== undefined) {
+      if(spawner.memory.tasks === undefined){
+        spawner.memory.tasks = []
+      }
+      spawner.memory.tasks.push(workerTask);
+    }
   }
 }
 
@@ -233,13 +262,20 @@ function executeHighestPriority(creep: Creep | undefined) {
     return;
   }
 
-  let highest = 0;
-
-  for(let i = 1; i < creep.memory.tasks.length; i++) {
-    if(creep.memory.tasks[i] > creep.memory.tasks[highest]) {
-      highest = i;
+  let highest: WorkerTask | undefined;
+  if(creep.memory.tasks === undefined) {
+    creep.memory.tasks = []
+  }
+  _.forEach(creep.memory.tasks, task => {
+    console.log(task.class)
+    if(highest !== undefined && highest.priority !== undefined && task.priority !== undefined && task.priority > highest.priority){
+      highest = task;
     }
+  });
+
+  if(highest !== undefined) {
+    highest.execute()
   }
 
-  creep.memory.tasks[highest].execute()
+
 }
