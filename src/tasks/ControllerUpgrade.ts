@@ -1,6 +1,5 @@
 import {WorkerTask} from "../@types/workerTask";
 import {MineEnergy} from "./MineEnergy";
-import {CreepConstants} from "../constants/CreepConstants";
 
 export class ControllerUpgrade implements WorkerTask {
   class: string;

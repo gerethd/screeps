@@ -1,6 +1,6 @@
-import {CreepConstants} from "../constants/CreepConstants";
+import {CreepConstants} from "./CreepConstants";
 
-export interface WorkerTask {
+interface WorkerTask {
 
   class: string;
   requirements: Map<string, Array<WorkerTask>>;

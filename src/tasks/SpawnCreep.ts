@@ -1,6 +1,5 @@
 import {WorkerTask} from "../@types/workerTask";
 import {RandomNameGenerator} from "../utils/RandomNameGenerator";
-import {CreepConstants} from "../constants/CreepConstants";
 import {ZevrantCreepMemory} from "../pojo/ZevrantCreepMemory";
 
 export class SpawnCreep implements WorkerTask {
@@ -34,7 +33,7 @@ export class SpawnCreep implements WorkerTask {
     if(room === undefined) {
       return false;
     }
-    let memory: ZevrantCreepMemory = new ZevrantCreepMemory("", room.name, true)
+    let memory: ZevrantCreepMemory = new ZevrantCreepMemory();
     return this.creep.spawnCreep([MOVE, MOVE, MOVE, CARRY, WORK], RandomNameGenerator.generate(), {memory: memory}) == 0;
   }
 

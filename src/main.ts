@@ -20,6 +20,7 @@ let roomCreepStorage: Map<string, Map<string, Creep>> = new Map<string, Map<stri
 
 export const loop = ErrorMapper.wrapLoop(() => {
 
+  console.log("here")
   _.forEach(Game.rooms, room => {
     if(roomTasksMap.get(room.name) == undefined) {
       roomTasksMap.set(room.name, []);
@@ -35,7 +36,9 @@ export const loop = ErrorMapper.wrapLoop(() => {
       creepStorage = roomCreepStorage.get(room.name);
     }
 
-    if(room.find(FIND_MY_CREEPS).length < maxRoomCreeps) {
+    console.log(getSpawnRequests() <= room.find(FIND_MY_SPAWNS).length)
+    if(room.find(FIND_MY_CREEPS).length < maxRoomCreeps && getSpawnRequests() <= room.find(FIND_MY_SPAWNS).length) {
+      console.log("here")
       let spawnTask = new SpawnCreep();
       let spawners = room.find(FIND_MY_SPAWNS);
       let spawner = spawners[Math.floor(Math.random() * spawners.length)];
@@ -63,7 +66,18 @@ export const loop = ErrorMapper.wrapLoop(() => {
   });
 
 });
-let test = 0;
+
+function getSpawnRequests(): number {
+  let count = 0;
+
+  _.forEach(taskTrees, task => {
+    if(task.value.class == new SpawnCreep().class) {
+      count++;
+    }
+  })
+  return count;
+}
+
 function buildDependents(task: WorkerTask, parentTask: TaskTree, room: Room) {
   let keys = task.requirements.keys();
   let key = keys.next();
@@ -221,5 +235,11 @@ function executeHighestPriority(creep: Creep | undefined) {
 
   let highest = 0;
 
-  for(let i = 0; i < creep.memory.tasks)
+  for(let i = 1; i < creep.memory.tasks.length; i++) {
+    if(creep.memory.tasks[i] > creep.memory.tasks[highest]) {
+      highest = i;
+    }
+  }
+
+  creep.memory.tasks[highest].execute()
 }

@@ -1,5 +1,5 @@
 
-export enum CreepConstants {
+enum CreepConstants {
   ROLE_HARVESTER = "harvester",
   ROLE_ROOM_UPGRADER = "roomUpgrader",
   ROLE_BUILDER = "builder",

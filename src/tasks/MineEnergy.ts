@@ -1,5 +1,4 @@
 import {WorkerTask} from "../@types/workerTask";
-import {CreepConstants} from "../constants/CreepConstants";
 
 export class MineEnergy implements WorkerTask {
 
