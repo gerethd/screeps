@@ -1,0 +1,4 @@
+
+export enum TaskConstants {
+  RESOURCE_CONTROLLER_UPGRADE = "controllerUpgradeProgress"
+}

@@ -1,0 +1,21 @@
+
+export enum CreepConstants {
+  ROLE_HARVESTER = "harvester",
+  ROLE_ROOM_UPGRADER = "roomUpgrader",
+  ROLE_BUILDER = "builder",
+  TASKS = "tasks",
+
+
+  PRIORITY_LOWEST = 0,
+  PRIORITY_LOW = 1,
+  PRIORITY_MEDIUM_LOW = 2,
+  PRIORITY_HIGH_LOW = 3,
+  PRIORITY_LOW_MEDIUM = 4,
+  PRIORITY_MEDIUM = 5,
+  PRIORITY_HIGH_MEDIUM = 6,
+  PRIORITY_LOW_HIGH = 7,
+  PRIORITY_MEDIUM_HIGH = 8,
+  PRIORITY_HIGH = 9,
+  PRIORITY_HIGHEST = 10
+
+}
